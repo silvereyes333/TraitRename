@@ -1,0 +1,23 @@
+## Title: Preposterous
+## Author: |c99CCEFsilvereyes|r
+## Description: Replaces the name of the Prosperous trait with custom text.
+## Version: 1.0.0
+## APIVersion: 100018
+## OptionalDependsOn: LibStub LibAddonMenu-2.0
+## SavedVariables: Preposterous_Data
+
+## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. All rights reserved.
+
+; Libraries
+lib\LibStub\LibStub.lua
+lib\LibAddonMenu-2.0\LibAddonMenu-2.0.lua
+lib\LibAddonMenu-2.0\controls\editbox.lua
+lib\LibAddonMenu-2.0\controls\panel.lua
+
+; Language files
+localization\en.lua
+localization\$(language).lua
+localization\CreateStrings.lua
+
+; Addon
+Preposterous.lua
