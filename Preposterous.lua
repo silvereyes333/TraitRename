@@ -1,10 +1,10 @@
 local addon = {
     name = "Preposterous",
-    version = "1.0.0",
+    version = "1.1.0",
     author = "|c99CCEFsilvereyes|r",
 }
 local defaults = {
-    replacementText = "Effing Preposterous",
+    replacementText = { [17] = "Effing Preposterous" },
 }
 
 --[[ Opens the addon settings panel ]]
@@ -13,18 +13,65 @@ function addon.OpenSettingsPanel()
     if not LAM2 then return end
     LAM2:OpenToPanel(addon.settingsPanel)
 end
-function addon.OverrideProsperous(value)
-    SafeAddString(SI_ITEMTRAITTYPE17, value, 1)
+local function GetTraitStringId(traitIndex)
+    local traitStringId = _G[zo_strformat("SI_ITEMTRAITTYPE<<1>>", traitIndex)]
+    return traitStringId
+end
+function addon.OverrideTraitText(traitIndex, value)
+    local traitStringId = GetTraitStringId(traitIndex)
+    SafeAddString(traitStringId, value, 1)
+end
+local function CreateTraitOption(optionsTable, traitIndex, gearCategoryStringId)
+    local traitStringId = GetTraitStringId(traitIndex)
+    local tooltip = zo_strformat(GetString(SI_PREPOSTEROUS_TEXT_TOOLTIP_FORMAT), 
+                                 GetString(traitStringId),
+                                 GetString(gearCategoryStringId))
+    local traitOption = {
+        type = "editbox",
+        width = "full",
+        name = GetString(traitStringId),
+        tooltip = tooltip,
+        isExtraWide = true,
+        getFunc = function() return addon.settings.replacementText[traitIndex] end,
+        setFunc = function(value)
+            addon.settings.replacementText[traitIndex] = value
+            addon.OverrideTraitText(traitIndex, value)
+        end,
+        default = defaults.replacementText[traitIndex],
+    }
+    
+    table.insert(optionsTable, traitOption)
+end
+local function UpgradeSettings(settings)
+    if addon.settings.dataVersion then
+        return
+    end
+    addon.settings.dataVersion = 2
+    local prosperousReplacementText = settings.replacementText
+    settings.replacementText = {}
+    for traitIndex = 0, 26 do
+        settings.replacementText[traitIndex] = defaults.replacementText[traitIndex]
+    end
+    settings.replacementText[17] = prosperousReplacementText
 end
 local function OnAddonLoaded(event, name)
     if name ~= addon.name then
         return
     end
     EVENT_MANAGER:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)
+    
+    -- Default to base game trait names
+    for traitIndex = 0, 26 do
+        if not defaults.replacementText[traitIndex] then
+            defaults.replacementText[traitIndex] = GetString(GetTraitStringId(traitIndex))
+        end
+    end
 
     -- Initialize saved variable
     addon.settings = ZO_SavedVars:NewAccountWide("Preposterous_Data", 1, nil, defaults)
-    addon.OverrideProsperous(addon.settings.replacementText)
+    
+    -- Upgrade to version 2 settings
+    UpgradeSettings(addon.settings)
 
     local LAM2 = LibStub("LibAddonMenu-2.0")
     if not LAM2 then return end
@@ -43,22 +90,56 @@ local function OnAddonLoaded(event, name)
 
     local optionsTable = {
 
-            -- Replacement text option
-            {
-                type = "editbox",
-                width = "full",
-                isExtraWide = true,
-                name = GetString(SI_PREPOSTEROUS_TEXT_LABEL),
-                tooltip = GetString(SI_PREPOSTEROUS_TEXT_TOOLTIP),
-                getFunc = function() return addon.settings.replacementText end,
-                setFunc = function(value)
-                    addon.settings.replacementText = value
-                    addon.OverrideProsperous(value)
-                end,
-            }
+        -- Armor Trait
+        {
+            type = "header",
+            width = "full",
+            name = GetString(SI_ITEMTYPE45),
+        }
     }
+    for traitIndex=11,20 do
+        CreateTraitOption(optionsTable, traitIndex, SI_SPECIALIZEDITEMTYPE300)
+    end
+    CreateTraitOption(optionsTable, 25)
+
+    table.insert(optionsTable,
+    
+        -- Weapon Trait
+        {
+            type = "header",
+            width = "full",
+            name = GetString(SI_ITEMTYPE46),
+        }
+    )
+    
+    for traitIndex=1,10 do
+        CreateTraitOption(optionsTable, traitIndex, SI_SPECIALIZEDITEMTYPE250)
+    end
+    CreateTraitOption(optionsTable, 26)
+    
+    
+    table.insert(optionsTable,
+    
+        -- Jewelry
+        {
+            type = "header",
+            width = "full",
+            name = GetString(SI_GAMEPADITEMCATEGORY38),
+        }
+    )
+    for traitIndex=21,24 do
+        CreateTraitOption(optionsTable, traitIndex, SI_GAMEPADITEMCATEGORY38)
+    end
 
     LAM2:RegisterOptionControls(addon.name .. "Options", optionsTable)
+    
+    -- Perform the initial override
+    for traitIndex = 0, 26 do
+        local traitStringId = GetTraitStringId(traitIndex)
+        SafeAddVersion(traitStringId, 1)
+        local traitText = addon.settings.replacementText[traitIndex]
+        addon.OverrideTraitText(traitIndex, traitText)
+    end
 
     SLASH_COMMANDS["/preposterous"] = addon.OpenSettingsPanel
 end

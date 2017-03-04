@@ -1,7 +1,7 @@
 ## Title: Preposterous
 ## Author: |c99CCEFsilvereyes|r
-## Description: Replaces the name of the Prosperous trait with custom text.
-## Version: 1.0.0
+## Description: Replaces weapon, armor and jewelry trait names with configurable custom names.
+## Version: 1.1.0
 ## APIVersion: 100018
 ## OptionalDependsOn: LibStub LibAddonMenu-2.0
 ## SavedVariables: Preposterous_Data
@@ -12,6 +12,7 @@
 lib\LibStub\LibStub.lua
 lib\LibAddonMenu-2.0\LibAddonMenu-2.0.lua
 lib\LibAddonMenu-2.0\controls\editbox.lua
+lib\LibAddonMenu-2.0\controls\header.lua
 lib\LibAddonMenu-2.0\controls\panel.lua
 
 ; Language files
