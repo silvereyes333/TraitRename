@@ -1,6 +1,6 @@
 local addon = {
     name = "Preposterous",
-    version = "1.1.0",
+    version = "1.1.1",
     author = "|c99CCEFsilvereyes|r",
 }
 local defaults = {
@@ -43,16 +43,29 @@ local function CreateTraitOption(optionsTable, traitIndex, gearCategoryStringId)
     table.insert(optionsTable, traitOption)
 end
 local function UpgradeSettings(settings)
-    if addon.settings.dataVersion then
+    if addon.settings.dataVersion and addon.settings.dataVersion > 2 then
         return
     end
-    addon.settings.dataVersion = 2
-    local prosperousReplacementText = settings.replacementText
-    settings.replacementText = {}
-    for traitIndex = 0, 26 do
-        settings.replacementText[traitIndex] = defaults.replacementText[traitIndex]
+    
+    -- Bugfix in data upgrade code for data version 2
+    if addon.settings.dataVersion == 2 and type(addon.settings.replacementText) == "table" 
+       and addon.settings.replacementText[17] and type(addon.settings.replacementText[17]) == "table"
+    then
+        addon.settings.dataVersion = 3
+        addon.settings.replacementText[17] = addon.settings.replacementText[17][17]
+        return
     end
-    settings.replacementText[17] = prosperousReplacementText
+    
+    -- Upgrade code from data version 1 to 3
+    addon.settings.dataVersion = 3
+    if type(settings.replacementText) == "string" then
+        local prosperousReplacementText = settings.replacementText
+        settings.replacementText = {}
+        for traitIndex = 0, 26 do
+            settings.replacementText[traitIndex] = defaults.replacementText[traitIndex]
+        end
+        settings.replacementText[17] = prosperousReplacementText
+   end
 end
 local function OnAddonLoaded(event, name)
     if name ~= addon.name then
