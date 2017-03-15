@@ -1,10 +1,10 @@
 local addon = {
     name = "Preposterous",
-    version = "1.1.1",
+    version = "1.2.0",
     author = "|c99CCEFsilvereyes|r",
 }
 local defaults = {
-    replacementText = { [17] = "Effing Preposterous" },
+    replacementText = { },
 }
 
 --[[ Opens the addon settings panel ]]
@@ -17,8 +17,22 @@ local function GetTraitStringId(traitIndex)
     local traitStringId = _G[zo_strformat("SI_ITEMTRAITTYPE<<1>>", traitIndex)]
     return traitStringId
 end
+--[[ Removes any ESO color code markers from the start and end of the given text. ]]
+local function StripColorAndWhitespace(text)
+    text = zo_strtrim(text)
+    text = string.gsub(text, "|c[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]", "")
+    text = string.gsub(text, "|r", "")
+    return text
+end
+local function PostProcess(value)
+    value = StripColorAndWhitespace(value)
+    return ZO_ColorDef:New("ff77dd"):Colorize(value)
+end
 function addon.OverrideTraitText(traitIndex, value)
     local traitStringId = GetTraitStringId(traitIndex)
+    if GetDate() == 20170401 and not addon.settings.nofun then
+        value = PostProcess(value)
+    end
     SafeAddString(traitStringId, value, 1)
 end
 local function CreateTraitOption(optionsTable, traitIndex, gearCategoryStringId)
@@ -67,6 +81,54 @@ local function UpgradeSettings(settings)
         settings.replacementText[17] = prosperousReplacementText
    end
 end
+local function InitialOverride()
+    -- Perform the initial override
+    for traitIndex = 0, 26 do
+        local traitStringId = GetTraitStringId(traitIndex)
+        SafeAddVersion(traitStringId, 1)
+        local traitText = addon.settings.replacementText[traitIndex]
+        addon.OverrideTraitText(traitIndex, traitText)
+    end
+end
+function addon.Refresh()
+    InitialOverride()
+end
+local isMasterWritQuest
+local function OnQuestOffered(eventCode)
+    local questInfo = GetOfferedQuestInfo()
+    -- Restore original trait names before accepting a Master Writ quest
+    if string.match(questInfo, "Rolis Hlaalu") then
+        isMasterWritQuest = true
+        for traitIndex = 0, 26 do
+            local traitStringId = GetTraitStringId(traitIndex)
+            SafeAddString(traitStringId, defaults.replacementText[traitIndex], 1)
+        end
+    end
+end
+local function OnChatterEnd(eventCode)
+    -- Reapply custom trait names after a Master Writ dialog closes
+    if isMasterWritQuest then
+        isMasterWritQuest = nil
+        InitialOverride()
+    end
+end
+local function SlashCommand(argument)
+    if not argument or argument == "settings" then
+        addon.OpenSettingsPanel()
+        
+    elseif argument == "refresh" or argument == "reload" then
+        addon.Refresh()
+        
+    elseif argument == "fun" then
+        addon.settings.nofun = nil
+        addon.Refresh()
+        
+    elseif argument == "nofun" then
+        addon.settings.nofun = true
+        addon.Refresh()
+        
+    end
+end
 local function OnAddonLoaded(event, name)
     if name ~= addon.name then
         return
@@ -75,9 +137,7 @@ local function OnAddonLoaded(event, name)
     
     -- Default to base game trait names
     for traitIndex = 0, 26 do
-        if not defaults.replacementText[traitIndex] then
-            defaults.replacementText[traitIndex] = GetString(GetTraitStringId(traitIndex))
-        end
+        defaults.replacementText[traitIndex] = GetString(GetTraitStringId(traitIndex))
     end
 
     -- Initialize saved variable
@@ -146,16 +206,15 @@ local function OnAddonLoaded(event, name)
 
     LAM2:RegisterOptionControls(addon.name .. "Options", optionsTable)
     
-    -- Perform the initial override
-    for traitIndex = 0, 26 do
-        local traitStringId = GetTraitStringId(traitIndex)
-        SafeAddVersion(traitStringId, 1)
-        local traitText = addon.settings.replacementText[traitIndex]
-        addon.OverrideTraitText(traitIndex, traitText)
-    end
+    InitialOverride()
 
-    SLASH_COMMANDS["/preposterous"] = addon.OpenSettingsPanel
+    SLASH_COMMANDS["/ptrait"]       = SlashCommand
+    SLASH_COMMANDS["/preposterous"] = SlashCommand
 end
 EVENT_MANAGER:RegisterForEvent(addon.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
+EVENT_MANAGER:RegisterForEvent(addon.name, EVENT_QUEST_OFFERED, OnQuestOffered)
+EVENT_MANAGER:RegisterForEvent(addon.name, EVENT_CHATTER_END, OnChatterEnd)
+
+   
 
 Preposterous = addon
