@@ -1,6 +1,6 @@
 local addon = {
     name = "Preposterous",
-    version = "1.2.2",
+    version = "1.2.3",
     author = "|c99CCEFsilvereyes|r",
 }
 local defaults = {
