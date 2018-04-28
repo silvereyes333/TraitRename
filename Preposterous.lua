@@ -1,6 +1,6 @@
 local addon = {
     name = "Preposterous",
-    version = "1.2.5",
+    version = "1.3.0",
     author = "|c99CCEFsilvereyes|r",
 }
 local defaults = {
@@ -24,15 +24,8 @@ local function StripColorAndWhitespace(text)
     text = string.gsub(text, "|r", "")
     return text
 end
-local function PostProcess(value)
-    value = StripColorAndWhitespace(value)
-    return ZO_ColorDef:New("ff77dd"):Colorize(value)
-end
 function addon.OverrideTraitText(traitIndex, value)
     local traitStringId = GetTraitStringId(traitIndex)
-    if GetDate() == 20170401 and not addon.settings.nofun then
-        value = PostProcess(value)
-    end
     SafeAddString(traitStringId, value, 1)
 end
 local function CreateTraitOption(optionsTable, traitIndex, gearCategoryStringId)
@@ -75,7 +68,7 @@ local function UpgradeSettings(settings)
     if type(settings.replacementText) == "string" then
         local prosperousReplacementText = settings.replacementText
         settings.replacementText = {}
-        for traitIndex = 0, 26 do
+        for traitIndex = ITEM_TRAIT_TYPE_MIN_VALUE, ITEM_TRAIT_TYPE_MAX_VALUE do
             settings.replacementText[traitIndex] = defaults.replacementText[traitIndex]
         end
         settings.replacementText[17] = prosperousReplacementText
@@ -83,11 +76,13 @@ local function UpgradeSettings(settings)
 end
 local function InitialOverride()
     -- Perform the initial override
-    for traitIndex = 0, 26 do
+    for traitIndex = ITEM_TRAIT_TYPE_MIN_VALUE, ITEM_TRAIT_TYPE_MAX_VALUE do
         local traitStringId = GetTraitStringId(traitIndex)
-        SafeAddVersion(traitStringId, 1)
-        local traitText = addon.settings.replacementText[traitIndex]
-        addon.OverrideTraitText(traitIndex, traitText)
+        if addon.settings.replacementText[traitIndex] then
+            SafeAddVersion(traitStringId, 1)
+            local traitText = addon.settings.replacementText[traitIndex]
+            addon.OverrideTraitText(traitIndex, traitText)
+        end
     end
 end
 function addon.Refresh()
@@ -99,7 +94,7 @@ local function OnQuestOffered(eventCode)
     -- Restore original trait names before accepting a Master Writ quest
     if string.match(questInfo, "Rolis Hlaalu") then
         isMasterWritQuest = true
-        for traitIndex = 0, 26 do
+        for traitIndex = ITEM_TRAIT_TYPE_MIN_VALUE, ITEM_TRAIT_TYPE_MAX_VALUE do
             local traitStringId = GetTraitStringId(traitIndex)
             SafeAddString(traitStringId, defaults.replacementText[traitIndex], 1)
         end
@@ -118,15 +113,6 @@ local function SlashCommand(argument)
         
     elseif argument == "refresh" or argument == "reload" then
         addon.Refresh()
-        
-    elseif argument == "fun" then
-        addon.settings.nofun = nil
-        addon.Refresh()
-        
-    elseif argument == "nofun" then
-        addon.settings.nofun = true
-        addon.Refresh()
-        
     end
 end
 local function OnAddonLoaded(event, name)
@@ -136,7 +122,7 @@ local function OnAddonLoaded(event, name)
     EVENT_MANAGER:UnregisterForEvent(addon.name, EVENT_ADD_ON_LOADED)
     
     -- Default to base game trait names
-    for traitIndex = 0, 26 do
+    for traitIndex = ITEM_TRAIT_TYPE_MIN_VALUE, ITEM_TRAIT_TYPE_MAX_VALUE do
         defaults.replacementText[traitIndex] = GetString(GetTraitStringId(traitIndex))
     end
 
@@ -155,21 +141,26 @@ local function OnAddonLoaded(event, name)
         displayName = addon.name,
         author = addon.author,
         version = addon.version,
-        --website = "http://www.esoui.com/downloads/<TBD>.html",
+        website = "https://www.esoui.com/downloads/info1634-Preposterous.html",
         registerForRefresh = true,
         registerForDefaults = true,
     }
     addon.settingsPanel = LAM2:RegisterAddonPanel(addon.name .. "Options", panelData)
 
-    local optionsTable = {
-
+    local optionsTable = { }
+    
+    -- No trait
+    CreateTraitOption(optionsTable, 0)
+    
+    table.insert(optionsTable,
+        
         -- Armor Trait
         {
             type = "header",
             width = "full",
             name = GetString(SI_ITEMTYPE45),
         }
-    }
+    )
     for traitIndex=11,20 do
         CreateTraitOption(optionsTable, traitIndex, SI_SPECIALIZEDITEMTYPE300)
     end
@@ -203,7 +194,12 @@ local function OnAddonLoaded(event, name)
     for traitIndex=21,24 do
         CreateTraitOption(optionsTable, traitIndex, SI_GAMEPADITEMCATEGORY38)
     end
-
+    if ITEM_TRAIT_TYPE_MAX_VALUE > 27 then
+        for traitIndex=27,33 do
+            CreateTraitOption(optionsTable, traitIndex, SI_GAMEPADITEMCATEGORY38)
+        end
+    end
+    
     LAM2:RegisterOptionControls(addon.name .. "Options", optionsTable)
     
     InitialOverride()
