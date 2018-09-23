@@ -1,11 +1,12 @@
 local addon = {
     name = "Preposterous",
-    version = "1.3.0",
+    version = "1.4.0",
     author = "|c99CCEFsilvereyes|r",
 }
 local defaults = {
-    replacementText = { },
+    replacementText = { }
 }
+local LibSavedVars = LibStub("LibSavedVars")
 
 --[[ Opens the addon settings panel ]]
 function addon.OpenSettingsPanel()
@@ -49,30 +50,28 @@ local function CreateTraitOption(optionsTable, traitIndex, gearCategoryStringId)
     
     table.insert(optionsTable, traitOption)
 end
-local function UpgradeSettings(settings)
-    if addon.settings.dataVersion and addon.settings.dataVersion > 2 then
+local function UpgradeSettings(self, settings)
+    if settings.dataVersion and settings.dataVersion > 2 then
         return
     end
     
     -- Bugfix in data upgrade code for data version 2
-    if addon.settings.dataVersion == 2 and type(addon.settings.replacementText) == "table" 
-       and addon.settings.replacementText[17] and type(addon.settings.replacementText[17]) == "table"
+    if settings.dataVersion == 2 and type(settings.replacementText) == "table" 
+       and settings.replacementText[17] and type(settings.replacementText[17]) == "table"
     then
-        addon.settings.dataVersion = 3
-        addon.settings.replacementText[17] = addon.settings.replacementText[17][17]
-        return
-    end
-    
-    -- Upgrade code from data version 1 to 3
-    addon.settings.dataVersion = 3
-    if type(settings.replacementText) == "string" then
+        settings.dataVersion = 3
+        settings.replacementText[17] = settings.replacementText[17][17]
+        
+    elseif settings.dataVersion == 1 and type(settings.replacementText) == "string" then
         local prosperousReplacementText = settings.replacementText
         settings.replacementText = {}
         for traitIndex = ITEM_TRAIT_TYPE_MIN_VALUE, ITEM_TRAIT_TYPE_MAX_VALUE do
             settings.replacementText[traitIndex] = defaults.replacementText[traitIndex]
         end
         settings.replacementText[17] = prosperousReplacementText
-   end
+    end
+    
+    settings.dataVersion = 4
 end
 local function InitialOverride()
     -- Perform the initial override
@@ -126,11 +125,11 @@ local function OnAddonLoaded(event, name)
         defaults.replacementText[traitIndex] = GetString(GetTraitStringId(traitIndex))
     end
 
-    -- Initialize saved variable
-    addon.settings = ZO_SavedVars:NewAccountWide("Preposterous_Data", 1, nil, defaults)
+    -- Initialize saved variables
+    addon.settings = LibSavedVars:New(addon.name .. "_Account", addon.name .. "_Character", defaults, true)
     
-    -- Upgrade to version 2 settings
-    UpgradeSettings(addon.settings)
+    local legacyAccountSettings = ZO_SavedVars:NewAccountWide(addon.name .. "_Data", 1)
+    addon.settings:Migrate(legacyAccountSettings, UpgradeSettings)
 
     local LAM2 = LibStub("LibAddonMenu-2.0")
     if not LAM2 then return end
@@ -147,7 +146,10 @@ local function OnAddonLoaded(event, name)
     }
     addon.settingsPanel = LAM2:RegisterAddonPanel(addon.name .. "Options", panelData)
 
-    local optionsTable = { }
+    local optionsTable = {
+        -- Account-wide settings
+        addon.settings:GetLibAddonMenuAccountCheckbox(),
+    }
     
     -- No trait
     CreateTraitOption(optionsTable, 0)
