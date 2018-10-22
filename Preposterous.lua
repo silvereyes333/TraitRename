@@ -1,6 +1,6 @@
 local addon = {
     name = "Preposterous",
-    version = "1.4.0",
+    version = "1.4.1",
     author = "|c99CCEFsilvereyes|r",
 }
 local defaults = {
@@ -129,7 +129,7 @@ local function OnAddonLoaded(event, name)
     addon.settings = LibSavedVars:New(addon.name .. "_Account", addon.name .. "_Character", defaults, true)
     
     local legacyAccountSettings = ZO_SavedVars:NewAccountWide(addon.name .. "_Data", 1)
-    addon.settings:Migrate(legacyAccountSettings, UpgradeSettings)
+    addon.settings:Migrate(legacyAccountSettings, UpgradeSettings, addon)
 
     local LAM2 = LibStub("LibAddonMenu-2.0")
     if not LAM2 then return end

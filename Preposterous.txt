@@ -1,8 +1,8 @@
 ## Title: Preposterous
 ## Author: |c99CCEFsilvereyes|r
 ## Description: Replaces weapon, armor and jewelry trait names with configurable custom names.
-## Version: 1.4.0
-## APIVersion: 100024 100025
+## Version: 1.4.1
+## APIVersion: 100025
 ## DependsOn: LibStub LibSavedVars LibAddonMenu-2.0
 ## OptionalDependsOn: DolgubonsLazyWritCreator
 ## SavedVariables: Preposterous_Account
