@@ -1,16 +1,17 @@
 local addon = {
-    name = "Preposterous",
-    version = "1.4.2",
-    author = "|c99CCEFsilvereyes|r",
+    name = "TraitRename",
+    title = "Trait Rename",
+    version = "1.5.0",
+    author = "silvereyes",
 }
 local defaults = {
     replacementText = { }
 }
-local LibSavedVars = LibStub("LibSavedVars")
+local LSV = LibSavedVars or LibStub("LibSavedVars")
 
 --[[ Opens the addon settings panel ]]
 function addon.OpenSettingsPanel()
-    local LAM2 = LibStub("LibAddonMenu-2.0")
+    local LAM2 = LibAddonMenu2 or LibStub("LibAddonMenu-2.0")
     if not LAM2 then return end
     LAM2:OpenToPanel(addon.settingsPanel)
 end
@@ -126,21 +127,21 @@ local function OnAddonLoaded(event, name)
     end
 
     -- Initialize saved variables
-    addon.settings = LibSavedVars:New(addon.name .. "_Account", addon.name .. "_Character", defaults, true)
+    addon.settings = LSV:New(addon.name .. "_Account", addon.name .. "_Character", defaults, true)
     
     local legacyAccountSettings = ZO_SavedVars:NewAccountWide(addon.name .. "_Data", 1)
     addon.settings:Migrate(legacyAccountSettings, UpgradeSettings, addon)
 
-    local LAM2 = LibStub("LibAddonMenu-2.0")
+    local LAM2 = LibAddonMenu2 or LibStub("LibAddonMenu-2.0")
     if not LAM2 then return end
 
     local panelData = {
         type = "panel",
-        name = addon.name,
-        displayName = addon.name,
+        name = addon.title,
+        displayName = addon.title,
         author = addon.author,
         version = addon.version,
-        website = "https://www.esoui.com/downloads/info1634-Preposterous.html",
+        website = "https://www.esoui.com/downloads/info1634-TraitRename.html",
         registerForRefresh = true,
         registerForDefaults = true,
     }

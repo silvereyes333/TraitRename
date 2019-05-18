@@ -1,13 +1,12 @@
-## Title: Preposterous
-## Author: |c99CCEFsilvereyes|r
-## Description: Replaces weapon, armor and jewelry trait names with configurable custom names.
-## Version: 1.4.2
-## APIVersion: 100025 100026
-## DependsOn: LibStub LibSavedVars LibAddonMenu-2.0
+## Title: TraitRename
+## Author: silvereyes
+## Description: Replaces weapon, armor and jewelry trait names with configurable custom names, including colored ones.
+## Version: 1.5.0
+## APIVersion: 100026 100027
+## DependsOn: LibSavedVars LibAddonMenu-2.0
 ## OptionalDependsOn: DolgubonsLazyWritCreator
 ## SavedVariables: Preposterous_Account
 ## SavedVariables: Preposterous_Character
-## SavedVariables: Preposterous_Data
 
 ## This Add-On is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. 
 ## The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the 
@@ -19,4 +18,4 @@ localization\$(language).lua
 localization\CreateStrings.lua
 
 ; Addon
-Preposterous.lua
+TraitRename.lua
