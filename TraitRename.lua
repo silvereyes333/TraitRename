@@ -1,19 +1,16 @@
 local addon = {
     name = "TraitRename",
     title = "Trait Rename",
-    version = "1.5.0",
+    version = "1.5.1",
     author = "silvereyes",
 }
 local defaults = {
     replacementText = { }
 }
-local LSV = LibSavedVars or LibStub("LibSavedVars")
 
 --[[ Opens the addon settings panel ]]
 function addon.OpenSettingsPanel()
-    local LAM2 = LibAddonMenu2 or LibStub("LibAddonMenu-2.0")
-    if not LAM2 then return end
-    LAM2:OpenToPanel(addon.settingsPanel)
+    LibAddonMenu2:OpenToPanel(addon.settingsPanel)
 end
 local function GetTraitStringId(traitIndex)
     local traitStringId = _G[zo_strformat("SI_ITEMTRAITTYPE<<1>>", traitIndex)]
@@ -127,14 +124,11 @@ local function OnAddonLoaded(event, name)
     end
 
     -- Initialize saved variables
-    addon.settings = LSV:New(addon.name .. "_Account", addon.name .. "_Character", defaults, true)
+    addon.settings = LibSavedVars:New(addon.name .. "_Account", addon.name .. "_Character", defaults, true)
     
     local legacyAccountSettings = ZO_SavedVars:NewAccountWide(addon.name .. "_Data", 1)
     addon.settings:Migrate(legacyAccountSettings, UpgradeSettings, addon)
-
-    local LAM2 = LibAddonMenu2 or LibStub("LibAddonMenu-2.0")
-    if not LAM2 then return end
-
+    
     local panelData = {
         type = "panel",
         name = addon.title,
@@ -145,7 +139,7 @@ local function OnAddonLoaded(event, name)
         registerForRefresh = true,
         registerForDefaults = true,
     }
-    addon.settingsPanel = LAM2:RegisterAddonPanel(addon.name .. "Options", panelData)
+    addon.settingsPanel = LibAddonMenu2:RegisterAddonPanel(addon.name .. "Options", panelData)
 
     local optionsTable = {
         -- Account-wide settings
@@ -203,7 +197,7 @@ local function OnAddonLoaded(event, name)
         end
     end
     
-    LAM2:RegisterOptionControls(addon.name .. "Options", optionsTable)
+    LibAddonMenu2:RegisterOptionControls(addon.name .. "Options", optionsTable)
     
     InitialOverride()
 
