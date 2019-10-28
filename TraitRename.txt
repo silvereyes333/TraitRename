@@ -1,8 +1,8 @@
 ## Title: TraitRename
 ## Author: silvereyes
 ## Description: Replaces weapon, armor and jewelry trait names with configurable custom names, including colored ones.
-## Version: 1.5.1
-## APIVersion: 100027 100028
+## Version: 1.5.2
+## APIVersion: 100029 100030
 ## DependsOn: LibSavedVars LibAddonMenu-2.0
 ## OptionalDependsOn: DolgubonsLazyWritCreator
 ## SavedVariables: Preposterous_Account
