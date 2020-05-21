@@ -1,7 +1,7 @@
 local addon = {
     name = "TraitRename",
     title = "Trait Rename",
-    version = "1.5.3",
+    version = "1.5.4",
     author = "silvereyes",
 }
 local defaults = {
@@ -124,10 +124,11 @@ local function OnAddonLoaded(event, name)
     end
 
     -- Initialize saved variables
-    addon.settings = LibSavedVars:New(addon.name .. "_Account", addon.name .. "_Character", defaults, true)
-    
-    local legacyAccountSettings = ZO_SavedVars:NewAccountWide(addon.name .. "_Data", 1)
-    addon.settings:Migrate(legacyAccountSettings, UpgradeSettings, addon)
+    addon.settings = LibSavedVars:NewAccountWide(addon.name .. "_Account", defaults)
+                                 :AddCharacterSettingsToggle(addon.name .. "_Character")
+    if LSV_Data.EnableDefaultsTrimming then
+        addon.settings:EnableDefaultsTrimming()
+    end
     
     local panelData = {
         type = "panel",
