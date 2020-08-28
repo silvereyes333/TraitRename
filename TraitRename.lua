@@ -1,7 +1,7 @@
 local addon = {
     name = "TraitRename",
     title = "Trait Rename",
-    version = "1.5.5",
+    version = "1.5.6",
     author = "silvereyes",
 }
 local defaults = {
@@ -124,8 +124,8 @@ local function OnAddonLoaded(event, name)
     end
 
     -- Initialize saved variables
-    addon.settings = LibSavedVars:NewAccountWide(addon.name .. "_Account", defaults)
-                                 :AddCharacterSettingsToggle(addon.name .. "_Character")
+    addon.settings = LibSavedVars:NewAccountWide("Preposterous_Account", defaults)
+                                 :AddCharacterSettingsToggle("Preposterous_Character")
     if LSV_Data.EnableDefaultsTrimming then
         addon.settings:EnableDefaultsTrimming()
     end
