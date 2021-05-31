@@ -1,7 +1,7 @@
 local addon = {
     name = "TraitRename",
     title = "Trait Rename",
-    version = "1.5.8",
+    version = "1.5.9",
     author = "silvereyes",
 }
 local defaults = {
